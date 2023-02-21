@@ -1,5 +1,5 @@
 module fortio.org/sets
 
-go 1.19
+go 1.18
 
 require fortio.org/assert v1.1.4
