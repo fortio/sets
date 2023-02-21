@@ -19,7 +19,7 @@ func TestArrayToSet(t *testing.T) {
 	a := []string{"z", "a", "c", "b"}
 	s := sets.FromSlice(a)
 	assert.Equal(t, "a,b,c,z", s.String())
-	assert.Equal(t, s.Sorted(), []string{"a", "b", "c", "z"})
+	assert.Equal(t, sets.Sort(s), []string{"a", "b", "c", "z"})
 }
 
 func TestRemoveCommon(t *testing.T) {

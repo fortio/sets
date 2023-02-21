@@ -15,10 +15,10 @@ import (
 	"golang.org/x/exp/constraints"
 )
 
-type Set[T constraints.Ordered] map[T]struct{}
+type Set[T comparable] map[T]struct{}
 
 // SetFromSlice constructs a Set from a slice.
-func FromSlice[T constraints.Ordered](items []T) Set[T] {
+func FromSlice[T comparable](items []T) Set[T] {
 	// best pre-allocation if there are no duplicates
 	res := make(map[T]struct{}, len(items))
 	for _, item := range items {
@@ -52,7 +52,7 @@ func (s Set[T]) Remove(item ...T) {
 	}
 }
 
-func New[T constraints.Ordered](item ...T) Set[T] {
+func New[T comparable](item ...T) Set[T] {
 	res := make(Set[T], len(item))
 	res.Add(item...)
 	return res
@@ -70,7 +70,7 @@ func (s Set[T]) String() string {
 // RemoveCommon removes elements from both sets that are in both,
 // leaving only the delta. Useful for Notifier on Set so that
 // oldValue has what has been removed and newValue has what has been added.
-func RemoveCommon[T constraints.Ordered](a, b Set[T]) {
+func RemoveCommon[T comparable](a, b Set[T]) {
 	if len(a) > len(b) {
 		a, b = b, a
 	}
@@ -82,8 +82,8 @@ func RemoveCommon[T constraints.Ordered](a, b Set[T]) {
 	}
 }
 
-func (s Set[T]) Sorted() []T {
-	keys := make([]T, 0, len(s))
+func Sort[Q constraints.Ordered](s Set[Q]) []Q {
+	keys := make([]Q, 0, len(s))
 	for k := range s {
 		keys = append(keys, k)
 	}
