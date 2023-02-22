@@ -4,4 +4,7 @@
 [![Coverage](https://codecov.io/github/fortio/sets/branch/main/graph/badge.svg?token=LONYZDFQ7C)](https://codecov.io/github/fortio/sets)
 
 # sets
-Sets and Set operations in golang (ie `map[T]struct{}` but with helper functions/nicer names, hiding the `struct{}{}` etc...)
+Sets and Set operations in golang 
+
+Internally as simple as a `map[T]struct{}` but with additional helper functions, operations like Union, Intersect, XOR, to/from Slices conversion, etc...
+and hiding the `struct{}{}` etc...
