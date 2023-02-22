@@ -13,6 +13,10 @@ import (
 func TestSetToString(t *testing.T) {
 	s := sets.Set[string]{"z": {}, "a": {}, "c": {}, "b": {}}
 	assert.Equal(t, "a,b,c,z", s.String())
+	assert.Equal(t, s.Len(), 4)
+	s.Clear()
+	assert.Equal(t, "", s.String())
+	assert.Equal(t, s.Len(), 0)
 }
 
 func TestArrayToSet(t *testing.T) {
@@ -34,12 +38,34 @@ func TestRemoveCommon(t *testing.T) {
 	// also check clone is not modifying the original etc
 	setAA = setB.Clone() // putting B in AA on purpose and vice versa
 	setBB = setA.Clone()
+	assert.True(t, setAA.Equals(setB))
+	assert.True(t, setB.Equals(setAA))
+	assert.False(t, setAA.Equals(setA))
+	assert.False(t, setB.Equals(setBB))
 	sets.XOR(setAA, setBB)
 	assert.Equal(t, "a,c", setBB.String())
 	assert.Equal(t, "e,f,g", setAA.String())
 	assert.True(t, setBB.Has("c"))
 	setBB.Remove("c")
 	assert.False(t, setBB.Has("c"))
+}
+
+func TestMinus(t *testing.T) {
+	setA := sets.New("a", "b", "c", "d")
+	setB := sets.New("b", "d", "e", "f", "g")
+	setAB := setA.Clone().Minus(setB)
+	setBA := setB.Clone().Minus(setA)
+	assert.Equal(t, "a,c", setAB.String())
+	assert.Equal(t, "e,f,g", setBA.String())
+}
+
+func TestPlus(t *testing.T) {
+	setA := sets.New("a", "b", "c", "d")
+	setB := sets.New("b", "d", "e", "f", "g")
+	setAB := setA.Clone().Plus(setB)
+	setBA := setB.Clone().Plus(setA)
+	assert.Equal(t, "a,b,c,d,e,f,g", setAB.String())
+	assert.Equal(t, "a,b,c,d,e,f,g", setBA.String())
 }
 
 func TestUnion(t *testing.T) {
@@ -63,4 +89,15 @@ func TestIntersection2(t *testing.T) {
 	// cover stop early when empty intersection is reached, ie 3rd set won't be looked at
 	setC := sets.Intersection(setA, setB, setA)
 	assert.Equal(t, "", setC.String())
+}
+
+func TestSubset(t *testing.T) {
+	setA := sets.New("a", "b", "c", "d")
+	setB := sets.New("b", "d", "e", "f", "g")
+	setC := sets.New("b", "d")
+	assert.True(t, setC.Subset(setA))
+	assert.True(t, setA.Subset(setA))
+	assert.False(t, setA.Subset(setC))
+	assert.False(t, setA.Subset(setB))
+	assert.False(t, setB.Subset(setA))
 }
