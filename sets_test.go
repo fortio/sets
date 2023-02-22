@@ -34,10 +34,33 @@ func TestRemoveCommon(t *testing.T) {
 	// also check clone is not modifying the original etc
 	setAA = setB.Clone() // putting B in AA on purpose and vice versa
 	setBB = setA.Clone()
-	sets.RemoveCommon(setAA, setBB)
+	sets.XOR(setAA, setBB)
 	assert.Equal(t, "a,c", setBB.String())
 	assert.Equal(t, "e,f,g", setAA.String())
 	assert.True(t, setBB.Has("c"))
 	setBB.Remove("c")
 	assert.False(t, setBB.Has("c"))
+}
+
+func TestUnion(t *testing.T) {
+	setA := sets.New("a", "b", "c", "d")
+	setB := sets.New("b", "d", "e", "f", "g")
+	setC := sets.Union(sets.Union[string](), setA, setB)
+	assert.Equal(t, "a,b,c,d,e,f,g", setC.String())
+}
+
+func TestIntersection1(t *testing.T) {
+	setA := sets.New("a", "b", "c", "d")
+	setB := sets.New("b", "d", "e", "f", "g")
+	setC := sets.Intersection(setA, setB)
+	assert.Equal(t, "b,d", setC.String())
+}
+
+func TestIntersection2(t *testing.T) {
+	assert.Equal(t, len(sets.Intersection[string]()), 0)
+	setA := sets.New("a", "b", "c")
+	setB := sets.New("d", "e", "f")
+	// cover stop early when empty intersection is reached, ie 3rd set won't be looked at
+	setC := sets.Intersection(setA, setB, setA)
+	assert.Equal(t, "", setC.String())
 }

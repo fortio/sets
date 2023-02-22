@@ -17,14 +17,19 @@ import (
 
 type Set[T comparable] map[T]struct{}
 
-// SetFromSlice constructs a Set from a slice.
-func FromSlice[T comparable](items []T) Set[T] {
+// New returns a new set containing the given elements.
+func New[T comparable](item ...T) Set[T] {
 	// best pre-allocation if there are no duplicates
-	res := make(map[T]struct{}, len(items))
-	for _, item := range items {
-		res[item] = struct{}{}
-	}
+	res := make(Set[T], len(item))
+	res.Add(item...)
 	return res
+}
+
+// FromSlice constructs a Set from a slice.
+// [Elements] is the inverse function, getting back a slice from the Set.
+// This is a short cut/alias for New[T](items...).
+func FromSlice[T comparable](items []T) Set[T] {
+	return New(items...)
 }
 
 func (s Set[T]) Clone() Set[T] {
@@ -52,12 +57,50 @@ func (s Set[T]) Remove(item ...T) {
 	}
 }
 
-func New[T comparable](item ...T) Set[T] {
-	res := make(Set[T], len(item))
-	res.Add(item...)
+// Union returns a new set that has all the elements of all the sets.
+// Note that Union(s1) == s1.Clone() and Union[T]() == New[T]().
+func Union[T comparable](sets ...Set[T]) Set[T] {
+	if len(sets) == 0 {
+		return New[T]()
+	}
+	res := sets[0].Clone()
+	for _, s := range sets[1:] {
+		for k := range s {
+			res.Add(k)
+		}
+	}
 	return res
 }
 
+func Intersection[T comparable](sets ...Set[T]) Set[T] {
+	if len(sets) == 0 {
+		return New[T]()
+	}
+	res := sets[0].Clone()
+	for _, s := range sets[1:] {
+		if len(res) == 0 { // no point in continuing if already empty
+			return res
+		}
+		for k := range res {
+			if !s.Has(k) {
+				res.Remove(k)
+			}
+		}
+	}
+	return res
+}
+
+func (s Set[T]) Elements() []T {
+	res := make([]T, 0, len(s))
+	for k := range s {
+		res = append(res, k)
+	}
+	return res
+}
+
+// String() returns a coma separated list of the elements in the set.
+// This is mostly for troubleshooting/debug output unless the [T] serializes
+// to a string that doesn't contain commas.
 func (s Set[T]) String() string {
 	keys := make([]string, 0, len(s))
 	for k := range s {
@@ -68,8 +111,8 @@ func (s Set[T]) String() string {
 }
 
 // RemoveCommon removes elements from both sets that are in both,
-// leaving only the delta. Useful for Notifier on Set so that
-// oldValue has what has been removed and newValue has what has been added.
+// leaving only the delta. Useful when a is an old value and b is new
+// and you want to apply some operation on all removed and added elements.
 func RemoveCommon[T comparable](a, b Set[T]) {
 	if len(a) > len(b) {
 		a, b = b, a
@@ -82,11 +125,16 @@ func RemoveCommon[T comparable](a, b Set[T]) {
 	}
 }
 
+// XOR is an alias for [RemoveCommon], efficiently removes from each set the common
+// elements.
+func XOR[T comparable](a, b Set[T]) {
+	RemoveCommon(a, b)
+}
+
+// -- Additional operations on sets of ordered types
+
 func Sort[Q constraints.Ordered](s Set[Q]) []Q {
-	keys := make([]Q, 0, len(s))
-	for k := range s {
-		keys = append(keys, k)
-	}
+	keys := s.Elements()
 	sort.Slice(keys, func(i, j int) bool { return keys[i] < keys[j] })
 	return keys
 }
