@@ -8,6 +8,7 @@
 package sets // import "fortio.org/sets"
 
 import (
+	"encoding/json"
 	"fmt"
 	"sort"
 	"strings"
@@ -98,6 +99,48 @@ func (s Set[T]) Elements() []T {
 	return res
 }
 
+// Subset returns true if all elements of s are in the passed in set.
+func (s Set[T]) Subset(bigger Set[T]) bool {
+	for k := range s {
+		if !bigger.Has(k) {
+			return false
+		}
+	}
+	return true
+}
+
+// Minus mutates the receiver to remove all the elements of the passed in set.
+// If you want a copy use s.Clone().Minus(other). Returns the receiver for chaining.
+func (s Set[T]) Minus(other Set[T]) Set[T] {
+	for k := range other {
+		s.Remove(k)
+	}
+	return s
+}
+
+// Plus is similar to Union but mutates the receiver. Added for symmetry with Minus.
+// Returns the receiver for chaining.
+func (s Set[T]) Plus(others ...Set[T]) Set[T] {
+	for _, o := range others {
+		s.Add(o.Elements()...)
+	}
+	return s
+}
+
+func (s Set[T]) Equals(other Set[T]) bool {
+	return s.Subset(other) && other.Subset(s)
+}
+
+func (s Set[T]) Len() int {
+	return len(s)
+}
+
+func (s Set[T]) Clear() {
+	for k := range s {
+		delete(s, k)
+	}
+}
+
 // String() returns a coma separated list of the elements in the set.
 // This is mostly for troubleshooting/debug output unless the [T] serializes
 // to a string that doesn't contain commas.
@@ -129,6 +172,37 @@ func RemoveCommon[T comparable](a, b Set[T]) {
 // elements.
 func XOR[T comparable](a, b Set[T]) {
 	RemoveCommon(a, b)
+}
+
+// -- Serialization
+
+// MarshalJSON implements the json.Marshaler interface and only gets the elements as an array.
+func (s Set[T]) MarshalJSON() ([]byte, error) {
+	// How to handle all ordered at once??
+	switch v := any(s).(type) {
+	case Set[string]:
+		return json.Marshal(Sort(v))
+	case Set[int]:
+		return json.Marshal(Sort(v))
+	case Set[int8]:
+		return json.Marshal(Sort(v))
+	case Set[int64]:
+		return json.Marshal(Sort(v))
+	case Set[float64]:
+		return json.Marshal(Sort(v))
+	default:
+		return json.Marshal(s.Elements())
+	}
+}
+
+// UnmarshalJSON implements the json.Unmarshaler interface turns the slice back to a Set.
+func (s *Set[T]) UnmarshalJSON(data []byte) error {
+	var items []T
+	if err := json.Unmarshal(data, &items); err != nil {
+		return err
+	}
+	*s = New[T](items...)
+	return nil
 }
 
 // -- Additional operations on sets of ordered types
