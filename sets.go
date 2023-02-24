@@ -3,8 +3,8 @@
 // (c) 2023 Fortio Authors
 // See LICENSE
 
-// Sets and Set[T] type and operations of any comparable type (go 1.18+ generics)
-// [Intersection], [Union], [Subset], difference aka [Minus], [XOR],
+// Sets and [Set] type and operations of any comparable type (go 1.18+ generics)
+// [Intersection], [Union], [Set.Subset], difference aka [Set.Minus], [XOR],
 // JSON serialization and deserialization and more.
 package sets // import "fortio.org/sets"
 
