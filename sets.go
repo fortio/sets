@@ -3,8 +3,9 @@
 // (c) 2023 Fortio Authors
 // See LICENSE
 
-// Sets and Set type and operations in go 1.18+ generics.
-// (pending built in support in golang core)
+// Sets and Set[T] type and operations of any comparable type (go 1.18+ generics)
+// [Intersection], [Union], [Subset], difference aka [Minus], [XOR],
+// JSON serialization and deserialization and more.
 package sets // import "fortio.org/sets"
 
 import (
@@ -16,6 +17,7 @@ import (
 	"golang.org/x/exp/constraints"
 )
 
+// Set defines a low memory footprint set of any comparable type. Based on `map[T]struct{}`.
 type Set[T comparable] map[T]struct{}
 
 // New returns a new set containing the given elements.
@@ -33,6 +35,7 @@ func FromSlice[T comparable](items []T) Set[T] {
 	return New(items...)
 }
 
+// Clone returns a copy of the set.
 func (s Set[T]) Clone() Set[T] {
 	res := make(Set[T], len(s))
 	for k := range s {
@@ -41,17 +44,20 @@ func (s Set[T]) Clone() Set[T] {
 	return res
 }
 
+// Add items to the set.
 func (s Set[T]) Add(item ...T) {
 	for _, i := range item {
 		s[i] = struct{}{}
 	}
 }
 
+// Has returns true if the item is present in the set.
 func (s Set[T]) Has(item T) bool {
 	_, found := s[item]
 	return found
 }
 
+// Remove items from the set.
 func (s Set[T]) Remove(item ...T) {
 	for _, i := range item {
 		delete(s, i)
@@ -73,6 +79,7 @@ func Union[T comparable](sets ...Set[T]) Set[T] {
 	return res
 }
 
+// Intersection returns a new set that has the elements common to all the input sets.
 func Intersection[T comparable](sets ...Set[T]) Set[T] {
 	if len(sets) == 0 {
 		return New[T]()
@@ -91,6 +98,7 @@ func Intersection[T comparable](sets ...Set[T]) Set[T] {
 	return res
 }
 
+// Elements returns a slice of the elements in the set.
 func (s Set[T]) Elements() []T {
 	res := make([]T, 0, len(s))
 	for k := range s {
@@ -127,14 +135,17 @@ func (s Set[T]) Plus(others ...Set[T]) Set[T] {
 	return s
 }
 
+// Equals returns true if the two sets have the same elements.
 func (s Set[T]) Equals(other Set[T]) bool {
 	return len(s) == len(other) && s.Subset(other)
 }
 
+// Len returns the number of elements in the set (same as len(s) but as a method).
 func (s Set[T]) Len() int {
 	return len(s)
 }
 
+// Clear removes all elements from the set.
 func (s Set[T]) Clear() {
 	for k := range s {
 		delete(s, k)
@@ -207,6 +218,8 @@ func (s *Set[T]) UnmarshalJSON(data []byte) error {
 
 // -- Additional operations on sets of ordered types
 
+// Sort returns a sorted slice of the elements in the set.
+// Only applicable for when the type is sortable.
 func Sort[Q constraints.Ordered](s Set[Q]) []Q {
 	keys := s.Elements()
 	sort.Slice(keys, func(i, j int) bool { return keys[i] < keys[j] })
