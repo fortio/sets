@@ -158,7 +158,7 @@ func (s Set[T]) Clear() {
 func (s Set[T]) String() string {
 	keys := make([]string, 0, len(s))
 	for k := range s {
-		keys = append(keys, fmt.Sprintf("%v", k))
+		keys = append(keys, fmt.Sprint(k))
 	}
 	sort.Strings(keys)
 	return strings.Join(keys, ",")
