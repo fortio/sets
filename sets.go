@@ -128,7 +128,7 @@ func (s Set[T]) Plus(others ...Set[T]) Set[T] {
 }
 
 func (s Set[T]) Equals(other Set[T]) bool {
-	return s.Subset(other) && other.Subset(s)
+	return len(s) == len(other) && s.Subset(other)
 }
 
 func (s Set[T]) Len() int {
