@@ -5,6 +5,7 @@ package sets_test
 
 import (
 	"encoding/json"
+	"math/rand"
 	"testing"
 
 	"fortio.org/assert"
@@ -170,4 +171,34 @@ func TestBadJson(t *testing.T) {
 	s := sets.New[int]()
 	err := json.Unmarshal([]byte(jsonStr), &s)
 	assert.Error(t, err)
+}
+
+func setup(b *testing.B, n int) sets.Set[int64] {
+	s := sets.Set[int64]{}
+	max := 8 * int64(n)
+	i := 0
+	for ; len(s) != n; i++ {
+		// Add random elements to the set.
+		s.Add(rand.Int63n(max)) // set is somewhat sparse
+	}
+	b.Logf("Took %d iterations to fill set", i)
+	return s
+}
+
+var s1000 sets.Set[int64]
+
+func BenchmarkSetSort1000(b *testing.B) {
+	if s1000 == nil {
+		s1000 = setup(b, 1000)
+		b.ResetTimer()
+	}
+	for i := 0; i < b.N; i++ {
+		b.StopTimer()
+		s1 := s1000.Clone()
+		b.StartTimer()
+		r := sets.Sort(s1)
+		if len(r) != s1.Len() {
+			b.Fatalf("unexpected length change: %d", len(r))
+		}
+	}
 }
