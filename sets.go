@@ -15,6 +15,7 @@ import (
 	"strings"
 
 	"golang.org/x/exp/constraints"
+	"golang.org/x/exp/slices"
 )
 
 // Set defines a low memory footprint set of any comparable type. Based on `map[T]struct{}`.
@@ -222,6 +223,6 @@ func (s *Set[T]) UnmarshalJSON(data []byte) error {
 // Only applicable for when the type is sortable.
 func Sort[Q constraints.Ordered](s Set[Q]) []Q {
 	keys := s.Elements()
-	sort.Slice(keys, func(i, j int) bool { return keys[i] < keys[j] })
+	slices.Sort(keys)
 	return keys
 }
