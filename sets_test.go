@@ -157,10 +157,29 @@ func TestNonOrderedJSON(t *testing.T) {
 	// though I guess given it could be in any order it could be accidentally sorted too
 	assert.NotEqual(t, `[{"X":1},{"X":2},{"X":3},{"X":4}]`, string(b))
 	u := sets.New[foo]()
-	json.Unmarshal(b, &u)
+	err = json.Unmarshal(b, &u)
 	assert.NoError(t, err)
 	assert.Equal(t, 4, u.Len())
 	assert.True(t, s.Equals(u))
+}
+
+func TestGenerate(t *testing.T) {
+	setA := sets.New("a", "b", "c")
+	res := sets.Tuplets(setA, 0)
+	assert.Equal(t, res, [][]string{}, "should match empty")
+	res = sets.Tuplets(setA, 1)
+	assert.Equal(t, res, [][]string{{"a"}, {"b"}, {"c"}}, "should match single/identical")
+	res = sets.Tuplets(setA, 2)
+	assert.Equal(t, res, [][]string{{"a", "b"}, {"a", "c"}, {"b", "a"}, {"b", "c"}, {"c", "a"}, {"c", "b"}}, "should match pairs")
+	res = sets.Tuplets(setA, 3)
+	assert.Equal(t, res, [][]string{
+		{"a", "b", "c"},
+		{"a", "c", "b"},
+		{"b", "a", "c"},
+		{"b", "c", "a"},
+		{"c", "a", "b"},
+		{"c", "b", "a"},
+	}, "should match triplets")
 }
 
 func TestBadJson(t *testing.T) {

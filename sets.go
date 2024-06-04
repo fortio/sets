@@ -226,3 +226,28 @@ func Sort[Q constraints.Ordered](s Set[Q]) []Q {
 	slices.Sort(keys)
 	return keys
 }
+
+// Tuplets generates all the combinations of N of elements of the set.
+// for n = 2, it would return all pairs of elements.
+// for n = 3, all triplets, etc.
+func Tuplets[Q constraints.Ordered](s Set[Q], n int) [][]Q {
+	if n == 0 {
+		return [][]Q{}
+	}
+	if n == 1 {
+		res := make([][]Q, s.Len())
+		for i, e := range Sort(s) {
+			v := []Q{e}
+			res[i] = v
+		}
+		return res
+	}
+	res := make([][]Q, 0)
+	for _, e := range Sort(s) {
+		t := s.Clone()
+		for _, sub := range Tuplets(t.Minus(New(e)), n-1) {
+			res = append(res, append([]Q{e}, sub...))
+		}
+	}
+	return res
+}
