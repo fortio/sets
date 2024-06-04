@@ -46,8 +46,12 @@ func (s Set[T]) Clone() Set[T] {
 }
 
 // Add items to the set.
+// Add and thus its callers will panic() if NaN is passed in.
 func (s Set[T]) Add(item ...T) {
 	for _, i := range item {
+		if i != i { //nolint:gocritic // on purpose to find NaN
+			panic("NaN is not allowed in sets")
+		}
 		s[i] = struct{}{}
 	}
 }
