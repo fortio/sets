@@ -232,7 +232,7 @@ func Sort[Q constraints.Ordered](s Set[Q]) []Q {
 // for n = 3, all triplets, etc.
 func Tuplets[Q constraints.Ordered](s Set[Q], n int) [][]Q {
 	if n == 0 {
-		return [][]Q{{}}
+		return [][]Q{}
 	}
 	if n == 1 {
 		res := make([][]Q, s.Len())
