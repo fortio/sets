@@ -5,6 +5,7 @@ package sets_test
 
 import (
 	"encoding/json"
+	"math"
 	"math/rand"
 	"testing"
 
@@ -180,6 +181,26 @@ func TestGenerate(t *testing.T) {
 		{"c", "a", "b"},
 		{"c", "b", "a"},
 	}, "should match triplets")
+}
+
+func TestNotNaNFloats(t *testing.T) {
+	// Normal floats:
+	setA := sets.New(math.Pi, math.Pi, math.Pi, math.E)
+	assert.Equal(t, 2, setA.Len())
+	assert.True(t, setA.Has(math.Pi))
+	assert.True(t, setA.Has(math.E))
+	// order
+	assert.Equal(t, []float64{math.E, math.Pi}, sets.Sort(setA))
+}
+
+func TestNaNFloats(t *testing.T) {
+	defer func() {
+		if r := recover(); r == nil {
+			t.Errorf("The code did not panic")
+		}
+	}()
+	_ = sets.New(math.NaN(), math.NaN(), math.NaN(), math.NaN())
+	t.Fatal("Shouldn't be reached, should have paniced")
 }
 
 func TestBadJson(t *testing.T) {
