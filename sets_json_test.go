@@ -1,6 +1,9 @@
 // Copyright (c) Fortio Authors, All Rights Reserved
 // See LICENSE for licensing terms. (Apache-2.0)
 
+//go:build !no_json
+// +build !no_json
+
 package sets_test
 
 import (
