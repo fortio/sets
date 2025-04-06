@@ -6,15 +6,17 @@
 // Sets and [Set] type and operations of any comparable type (go 1.18+ generics)
 // [Intersection], [Union], [Set.Subset], difference aka [Set.Minus], [XOR],
 // JSON serialization and deserialization and more.
+// Version 1.2.1 only requires go1.18 for generics.
+// Version 1.3.0 requires go1.21 (and newer) for stdlib cmp, maps and slices packages.
 package sets // import "fortio.org/sets"
 
 import (
+	"cmp"
 	"fmt"
+	"maps"
+	"slices"
 	"sort"
 	"strings"
-
-	"golang.org/x/exp/constraints"
-	"golang.org/x/exp/slices"
 )
 
 // Set defines a low memory footprint set of any comparable type. Based on map[T]struct{}.
@@ -141,7 +143,7 @@ func (s Set[T]) Plus(others ...Set[T]) Set[T] {
 
 // Equals returns true if the two sets have the same elements.
 func (s Set[T]) Equals(other Set[T]) bool {
-	return len(s) == len(other) && s.Subset(other)
+	return maps.Equal(s, other)
 }
 
 // Len returns the number of elements in the set (same as len(s) but as a method).
@@ -151,9 +153,7 @@ func (s Set[T]) Len() int {
 
 // Clear removes all elements from the set.
 func (s Set[T]) Clear() {
-	for k := range s {
-		delete(s, k)
-	}
+	clear(s)
 }
 
 // String() returns a coma separated list of the elements in the set.
@@ -193,7 +193,7 @@ func XOR[T comparable](a, b Set[T]) {
 
 // Sort returns a sorted slice of the elements in the set.
 // Only applicable for when the type is sortable.
-func Sort[Q constraints.Ordered](s Set[Q]) []Q {
+func Sort[Q cmp.Ordered](s Set[Q]) []Q {
 	keys := s.Elements()
 	slices.Sort(keys)
 	return keys
@@ -202,7 +202,7 @@ func Sort[Q constraints.Ordered](s Set[Q]) []Q {
 // Tuplets generates all the combinations of N of elements of the set.
 // for n = 2, it would return all pairs of elements.
 // for n = 3, all triplets, etc.
-func Tuplets[Q constraints.Ordered](s Set[Q], n int) [][]Q {
+func Tuplets[Q cmp.Ordered](s Set[Q], n int) [][]Q {
 	if n == 0 {
 		return [][]Q{}
 	}
