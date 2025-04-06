@@ -17,7 +17,7 @@ import (
 	"golang.org/x/exp/slices"
 )
 
-// Set defines a low memory footprint set of any comparable type. Based on `map[T]struct{}`.
+// Set defines a low memory footprint set of any comparable type. Based on map[T]struct{}.
 type Set[T comparable] map[T]struct{}
 
 // New returns a new set containing the given elements.
@@ -130,7 +130,7 @@ func (s Set[T]) Minus(other Set[T]) Set[T] {
 	return s
 }
 
-// Plus is similar to Union but mutates the receiver. Added for symmetry with Minus.
+// Plus is similar to [Union] but mutates the receiver. Added for symmetry with [Set.Minus].
 // Returns the receiver for chaining.
 func (s Set[T]) Plus(others ...Set[T]) Set[T] {
 	for _, o := range others {
