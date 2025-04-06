@@ -145,11 +145,11 @@ func TestNaNFloats(t *testing.T) {
 
 func setup(b *testing.B, n int) sets.Set[int64] {
 	s := sets.Set[int64]{}
-	max := 8 * int64(n)
+	maxValue := 8 * int64(n)
 	i := 0
 	for ; len(s) != n; i++ {
 		// Add random elements to the set.
-		s.Add(rand.Int63n(max)) // set is somewhat sparse
+		s.Add(rand.Int63n(maxValue)) // set is somewhat sparse
 	}
 	b.Logf("Took %d iterations to fill set", i)
 	return s
